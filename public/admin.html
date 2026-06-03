@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>创见 C-Sight 八期投票后台</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/admin.js"></script>
+  </head>
+  <body>
+    <main class="shell admin-shell">
+      <section class="admin-hero" aria-labelledby="admin-title">
+        <p class="eyebrow">组织后台</p>
+        <h1 id="admin-title">创见 C-Sight 八期出行投票</h1>
+        <p class="hero-text">这里显示完整姓名、选择和补充意见。这个链接不要发到群里。</p>
+        <div class="admin-actions">
+          <button class="secondary-button" type="button" id="refresh-admin">刷新</button>
+          <button class="danger-button" type="button" id="clear-admin">清空测试数据</button>
+        </div>
+        <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="results-panel">
+        <div class="admin-summary" id="admin-summary"></div>
+        <div class="result-columns">
+          <div>
+            <h3>地点统计</h3>
+            <div class="result-list" id="admin-location-results"></div>
+          </div>
+          <div>
+            <h3>时间统计</h3>
+            <div class="result-list" id="admin-date-results"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="results-panel">
+        <div class="section-heading">
+          <p class="eyebrow">明细</p>
+          <h2>每个人的选择和意见</h2>
+        </div>
+        <div class="admin-votes" id="admin-votes"></div>
+      </section>
+    </main>
+  </body>
+</html>

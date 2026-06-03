@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f3b4a" />
+    <meta
+      name="description"
+      content="创见 C-Sight 八期小伙伴夏天出行投票，地点和时间都可以多选。"
+    />
+    <meta property="og:title" content="创见 C-Sight 八期夏天出行投票" />
+    <meta property="og:description" content="地点和时间都可以多选，投完再看当前结果。" />
+    <meta property="og:image" content="/assets/anji-rafting.jpg" />
+    <title>创见 C-Sight 八期出行投票</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">创见 C-Sight 八期 · 夏天两天一夜</p>
+          <h1 id="page-title">去哪儿玩，<span class="no-break">大家一起定</span></h1>
+          <p class="hero-text">从上海出发，地点和时间都可以多选。先投票，再看大家的当前选择。</p>
+        </div>
+        <div class="hero-stats" aria-live="polite">
+          <span class="stat-number" id="total-voters">0</span>
+          <span class="stat-label">人已投</span>
+        </div>
+      </section>
+
+      <form class="vote-panel" id="vote-form">
+        <label class="name-field">
+          <span>你的名字</span>
+          <input
+            id="voter-name"
+            name="name"
+            autocomplete="name"
+            maxlength="16"
+            placeholder="比如：小顾"
+            required
+          />
+        </label>
+
+        <section class="section-block" aria-labelledby="location-title">
+          <div class="section-heading">
+            <p class="eyebrow">地点</p>
+            <h2 id="location-title">想去哪里</h2>
+          </div>
+          <div class="location-grid" id="location-options"></div>
+        </section>
+
+        <section class="section-block" aria-labelledby="date-title">
+          <div class="section-heading">
+            <p class="eyebrow">时间</p>
+            <h2 id="date-title">哪几个日期可以</h2>
+          </div>
+          <div class="date-grid" id="date-options"></div>
+        </section>
+
+        <label class="comment-field">
+          <span>补充意见</span>
+          <textarea
+            id="comment"
+            name="comment"
+            maxlength="300"
+            rows="4"
+            placeholder="比如：更想住一晚、怕晒、想拼车、哪个时间要晚到..."
+          ></textarea>
+        </label>
+
+        <div class="actions">
+          <button class="primary-button" type="submit" id="submit-vote">提交我的选择</button>
+          <button class="secondary-button" type="button" id="view-results" hidden>查看结果</button>
+        </div>
+
+        <p class="privacy-note">结果里只显示每个人名字的第一个字；完整名字和意见只在组织后台看。</p>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </form>
+
+      <section class="results-panel" id="results" aria-labelledby="results-title" hidden>
+        <div class="section-heading">
+          <p class="eyebrow">当前分布</p>
+          <h2 id="results-title">大家怎么选</h2>
+        </div>
+
+        <div class="result-columns">
+          <div>
+            <h3>地点</h3>
+            <div class="result-list" id="location-results"></div>
+          </div>
+          <div>
+            <h3>时间</h3>
+            <div class="result-list" id="date-results"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
