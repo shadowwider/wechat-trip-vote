@@ -98,6 +98,11 @@ export default {
       return json({ ok: true, service: "wechat-trip-vote" });
     }
 
+    if (url.pathname === "/") {
+      const indexUrl = new URL("/index.html", url.origin);
+      return env.ASSETS.fetch(new Request(indexUrl, request));
+    }
+
     if (url.pathname === "/api/options" && request.method === "GET") {
       return json({ options: { locations: LOCATION_OPTIONS, dates: DATE_OPTIONS } });
     }
@@ -127,7 +132,7 @@ export default {
     }
 
     if (url.pathname === "/admin-csight-8") {
-      const adminUrl = new URL("/admin.html", url.origin);
+      const adminUrl = new URL("/admin-csight-8.html", url.origin);
       return env.ASSETS.fetch(new Request(adminUrl, request));
     }
 
