@@ -4,7 +4,7 @@
 
 这个分支仍然是 Cloudflare Workers 项目，沿用原来的 `wrangler.jsonc` 和 `VOTE_KV` 绑定。
 
-README 顶部有 Deploy to Cloudflare 按钮，可以先用它部署。如果按钮页面没有自动识别分支，请手动选择 `codex/ai-km-workshop-feedback-20260627`。
+不要使用 Deploy to Cloudflare 模板按钮。那个按钮会把这个项目克隆成一个新的 Git 仓库，再创建新的 Worker，适合公开模板，不适合当前“一个仓库多个投票分支”的工作流。
 
 用户端路径：
 
@@ -20,12 +20,22 @@ README 顶部有 Deploy to Cloudflare 按钮，可以先用它部署。如果按
 
 ## 使用 GitHub 分支部署
 
-如果 Cloudflare Worker 已连接这个 GitHub 仓库：
+推荐用 Cloudflare Workers Builds 连接已有 GitHub 仓库：
 
-1. 在 Cloudflare Worker 的 Builds / Git 设置中选择 production branch。
-2. 把 production branch 切到这个反馈表分支。
-3. 等 Cloudflare 自动构建。
-4. 构建完成后，用 Worker 域名加上 `/ai-km-workshop-0627` 访问用户端。
+1. 在 Cloudflare Dashboard 进入 `Workers & Pages`。
+2. 如果已经有 Worker，打开这个 Worker；如果没有，先创建一个 Worker。Worker 名称需要和 `wrangler.jsonc` 里的 `name` 一致，也就是 `wechat-trip-vote`。
+3. 进入 `Settings` -> `Builds`。
+4. 选择 `Connect`，连接 GitHub 仓库 `shadowwider/wechat-trip-vote`。
+5. Root directory 留空或填 `/`。
+6. Build command 填 `npm run build`。
+7. Deploy command 填 `npm run deploy`。
+8. 在 `Branch control` 中，把 production branch 设置为：
+
+   ```text
+   codex/ai-km-workshop-feedback-20260627
+   ```
+
+9. 保存并触发构建。构建完成后，用 Worker 域名加上 `/ai-km-workshop-0627` 访问用户端。
 
 非 production 分支通常不会自动替换正式线上 Worker。它们可以作为预览或版本，但正式访问哪个分支，取决于 Cloudflare 当前配置的 production branch 或你手动部署的版本。
 
@@ -36,7 +46,11 @@ npm install
 npm run deploy
 ```
 
-第一次部署时 Wrangler 会要求登录 Cloudflare。
+第一次部署时 Wrangler 会要求登录 Cloudflare。这个方式会部署你当前本地 checkout 的代码，所以要先确认当前分支是：
+
+```bash
+git branch --show-current
+```
 
 ## 自定义域名
 
