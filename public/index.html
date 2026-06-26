@@ -3,98 +3,118 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0f3b4a" />
+    <meta name="theme-color" content="#22324a" />
     <meta
       name="description"
-      content="创见 C-Sight 八期小伙伴夏天出行投票，地点和时间都可以多选。"
+      content="领导力 AI 兴趣小组 6 月 27 日工作坊反馈表。"
     />
-    <meta property="og:title" content="创见 C-Sight 八期夏天出行投票" />
-    <meta property="og:description" content="地点和时间都可以多选，投完再看当前结果。" />
-    <meta property="og:image" content="/assets/anji-rafting.jpg" />
-    <title>创见 C-Sight 八期出行投票</title>
+    <meta property="og:title" content="领导力 AI 兴趣小组工作坊反馈" />
+    <meta property="og:description" content="AI 和知识管理 / LLM Wiki 工作坊反馈表" />
+    <title>领导力 AI 兴趣小组工作坊反馈</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.js"></script>
   </head>
   <body>
-    <main class="shell">
-      <section class="hero" aria-labelledby="page-title">
-        <div class="hero-copy">
-          <p class="eyebrow">创见 C-Sight 八期 · 夏天两天一夜</p>
-          <h1 id="page-title">去哪儿玩，<span class="no-break">大家一起定</span></h1>
-          <p class="hero-text">从上海出发，地点和时间都可以多选。先投票，再看大家的当前选择。</p>
-        </div>
-        <div class="hero-stats" aria-live="polite">
-          <span class="stat-number" id="total-voters">0</span>
-          <span class="stat-label">人已投</span>
-        </div>
+    <main class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">2026.06.27 · 领导力 AI 兴趣小组</p>
+        <h1 id="page-title">AI 和知识管理工作坊反馈</h1>
+        <p class="intro-copy">LLM Wiki 实践复盘</p>
       </section>
 
-      <form class="vote-panel" id="vote-form">
-        <label class="name-field">
-          <span>你的名字</span>
+      <form class="feedback-form" id="feedback-form">
+        <label class="text-field">
+          <span>姓名 / 昵称</span>
           <input
-            id="voter-name"
+            id="name"
             name="name"
             autocomplete="name"
-            maxlength="16"
-            placeholder="比如：小顾"
+            maxlength="32"
+            placeholder="填写你的名字或昵称"
             required
           />
         </label>
 
-        <section class="section-block" aria-labelledby="location-title">
-          <div class="section-heading">
-            <p class="eyebrow">地点</p>
-            <h2 id="location-title">想去哪里</h2>
+        <fieldset class="score-field">
+          <legend>1. 您对课程整体收获满意度打分</legend>
+          <div class="score-options" data-score-group="overallScore">
+            <label><input type="radio" name="overallScore" value="1" required /><span>1</span></label>
+            <label><input type="radio" name="overallScore" value="2" /><span>2</span></label>
+            <label><input type="radio" name="overallScore" value="3" /><span>3</span></label>
+            <label><input type="radio" name="overallScore" value="4" /><span>4</span></label>
+            <label><input type="radio" name="overallScore" value="5" /><span>5</span></label>
           </div>
-          <div class="location-grid" id="location-options"></div>
-        </section>
-
-        <section class="section-block" aria-labelledby="date-title">
-          <div class="section-heading">
-            <p class="eyebrow">时间</p>
-            <h2 id="date-title">哪几个日期可以</h2>
+          <div class="score-scale" aria-hidden="true">
+            <span>较低</span>
+            <span>很高</span>
           </div>
-          <div class="date-grid" id="date-options"></div>
-        </section>
+        </fieldset>
 
-        <label class="comment-field">
-          <span>补充意见</span>
+        <label class="text-field">
+          <span>2. 课程中哪一具体模块最有价值？</span>
           <textarea
-            id="comment"
-            name="comment"
-            maxlength="300"
+            id="valuableModule"
+            name="valuableModule"
+            maxlength="500"
             rows="4"
-            placeholder="比如：更想住一晚、怕晒、想拼车、哪个时间要晚到..."
+            placeholder="例如：个人知识库搭建、LLM Wiki 方法、资料整理流程..."
+            required
           ></textarea>
         </label>
 
-        <div class="actions">
-          <button class="primary-button" type="submit" id="submit-vote">提交我的选择</button>
-          <button class="secondary-button" type="button" id="view-results" hidden>查看结果</button>
+        <label class="text-field">
+          <span>3. 您希望哪些 AI 课程内容进一步深入？</span>
+          <textarea
+            id="deeperTopics"
+            name="deeperTopics"
+            maxlength="500"
+            rows="4"
+            placeholder="例如：更多案例、工具链配置、团队协作实践..."
+            required
+          ></textarea>
+        </label>
+
+        <fieldset class="score-field">
+          <legend>4. 您是否愿意参加后续进阶课程？</legend>
+          <div class="score-options" data-score-group="advancedInterest">
+            <label><input type="radio" name="advancedInterest" value="1" required /><span>1</span></label>
+            <label><input type="radio" name="advancedInterest" value="2" /><span>2</span></label>
+            <label><input type="radio" name="advancedInterest" value="3" /><span>3</span></label>
+            <label><input type="radio" name="advancedInterest" value="4" /><span>4</span></label>
+            <label><input type="radio" name="advancedInterest" value="5" /><span>5</span></label>
+          </div>
+          <div class="score-scale" aria-hidden="true">
+            <span>不太愿意</span>
+            <span>非常愿意</span>
+          </div>
+        </fieldset>
+
+        <fieldset class="score-field">
+          <legend>5. 您是否愿意推荐其他人来参加？</legend>
+          <div class="score-options" data-score-group="recommendInterest">
+            <label><input type="radio" name="recommendInterest" value="1" required /><span>1</span></label>
+            <label><input type="radio" name="recommendInterest" value="2" /><span>2</span></label>
+            <label><input type="radio" name="recommendInterest" value="3" /><span>3</span></label>
+            <label><input type="radio" name="recommendInterest" value="4" /><span>4</span></label>
+            <label><input type="radio" name="recommendInterest" value="5" /><span>5</span></label>
+          </div>
+          <div class="score-scale" aria-hidden="true">
+            <span>不太愿意</span>
+            <span>非常愿意</span>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit" id="submit">提交反馈</button>
         </div>
 
-        <p class="privacy-note">结果里只显示每个人名字的第一个字；完整名字和意见只在组织后台看。</p>
         <p class="status" id="status" role="status" aria-live="polite"></p>
       </form>
 
-      <section class="results-panel" id="results" aria-labelledby="results-title" hidden>
-        <div class="section-heading">
-          <p class="eyebrow">当前分布</p>
-          <h2 id="results-title">大家怎么选</h2>
-        </div>
-
-        <div class="result-columns">
-          <div>
-            <h3>地点</h3>
-            <div class="result-list" id="location-results"></div>
-          </div>
-          <div>
-            <h3>时间</h3>
-            <div class="result-list" id="date-results"></div>
-          </div>
-        </div>
+      <section class="success-panel" id="success-panel" hidden>
+        <h2>反馈已收到</h2>
+        <p>谢谢你的时间。你的反馈会直接进入本次工作坊的统计面板。</p>
       </section>
     </main>
   </body>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>工作坊反馈后台</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/admin.js"></script>
+  </head>
+  <body>
+    <main class="page-shell admin-shell">
+      <section class="admin-header" aria-labelledby="admin-title">
+        <div>
+          <p class="eyebrow">管理端</p>
+          <h1 id="admin-title">领导力 AI 兴趣小组工作坊反馈</h1>
+          <p class="intro-copy">AI 和知识管理 / LLM Wiki · 2026.06.27</p>
+        </div>
+        <div class="admin-actions">
+          <button class="secondary-button" type="button" id="refresh">刷新</button>
+          <button class="secondary-button" type="button" id="download-csv">下载 CSV</button>
+          <button class="danger-button" type="button" id="clear">清空数据</button>
+        </div>
+        <p class="status admin-status" id="admin-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="dashboard-grid" aria-label="统计概览">
+        <article class="metric-card">
+          <span>提交人数</span>
+          <strong id="total-responses">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>整体收获均分</span>
+          <strong id="avg-overall">-</strong>
+        </article>
+        <article class="metric-card">
+          <span>进阶课程意愿</span>
+          <strong id="avg-advanced">-</strong>
+        </article>
+        <article class="metric-card">
+          <span>推荐他人意愿</span>
+          <strong id="avg-recommend">-</strong>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="eyebrow">评分分布</p>
+          <h2>1-5 分统计</h2>
+        </div>
+        <div class="distribution-grid" id="distributions"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="eyebrow">填空反馈</p>
+          <h2>模块与深入方向</h2>
+        </div>
+        <div class="text-response-grid">
+          <div>
+            <h3>最有价值的模块</h3>
+            <div class="quote-list" id="valuable-list"></div>
+          </div>
+          <div>
+            <h3>希望深入的内容</h3>
+            <div class="quote-list" id="deeper-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <p class="eyebrow">明细</p>
+          <h2>每个人的提交</h2>
+        </div>
+        <div class="response-list" id="response-list"></div>
+      </section>
+    </main>
+  </body>
+</html>

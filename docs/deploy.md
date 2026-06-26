@@ -1,78 +1,69 @@
 # 部署说明
 
-## 你需要准备
+## 推荐路径
 
-- 一个 GitHub 账号
-- 一个 Cloudflare 账号
-- 可选：你自己的域名，等部署成功后再绑定
+这个分支仍然是 Cloudflare Workers 项目，沿用原来的 `wrangler.jsonc` 和 `VOTE_KV` 绑定。
 
-这个项目不需要你先准备 API Key，也不需要先手动创建存储。Cloudflare 会根据 `wrangler.jsonc` 里的 `VOTE_KV` 绑定自动创建 KV 存储。
+用户端路径：
 
-## 推荐方式：Deploy to Cloudflare
+```text
+/ai-km-workshop-0627
+```
 
-1. 在 GitHub 新建一个仓库，例如 `wechat-trip-vote`。
-2. 把本项目文件推到这个仓库。
-   - 如果用 GitHub 网页上传文件，不要上传 `node_modules/`、`.wrangler/`、`dist/`，它们都是本地生成物。
-3. 打开 `README.md`，把 Deploy 按钮里的地址改成你的仓库地址：
+管理端路径：
 
-   ```md
-   [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/你的用户名/你的仓库名)
-   ```
+```text
+/ai-km-workshop-0627/admin
+```
 
-4. 在 GitHub 页面点击这个 Deploy 按钮。
-5. Cloudflare 会让你确认仓库、Worker 名称和资源绑定，默认保持 `VOTE_KV` 即可。
-6. 部署完成后，Cloudflare 会给你一个 `workers.dev` 链接。把这个链接发到微信群就能投票。
-7. 后台地址是在投票链接后面加 `/admin-csight-8`，例如：
+## 使用 GitHub 分支部署
 
-   ```text
-   https://你的项目.workers.dev/admin-csight-8
-   ```
+如果 Cloudflare Worker 已连接这个 GitHub 仓库：
 
-   这个后台会显示完整姓名和补充意见，也可以清空测试数据。它目前没有账号密码，属于“不要公开传播的内部链接”，不要发到群里。
+1. 在 Cloudflare Worker 的 Builds / Git 设置中选择 production branch。
+2. 把 production branch 切到这个反馈表分支。
+3. 等 Cloudflare 自动构建。
+4. 构建完成后，用 Worker 域名加上 `/ai-km-workshop-0627` 访问用户端。
 
-## 绑定自己的域名
+非 production 分支通常不会自动替换正式线上 Worker。它们可以作为预览或版本，但正式访问哪个分支，取决于 Cloudflare 当前配置的 production branch 或你手动部署的版本。
 
-部署成功后，在 Cloudflare 控制台进入这个 Worker：
-
-1. 进入 `Settings` 或 `Triggers`。
-2. 找到 `Custom Domains`。
-3. 添加你想用的域名，例如 `vote.example.com`。
-4. 如果域名 DNS 已经托管在 Cloudflare，一般按页面提示确认即可。
-
-## 命令行方式
-
-如果你想在本机直接部署：
+## 使用命令行部署
 
 ```bash
 npm install
 npm run deploy
 ```
 
-第一次部署时 Wrangler 会要求你登录 Cloudflare。部署时会自动创建 `VOTE_KV` 资源，并把它绑定到 Worker。
+第一次部署时 Wrangler 会要求登录 Cloudflare。
 
-如果本机 `npm install` 遇到证书链报错，可以临时这样跑一次：
+## 自定义域名
 
-```bash
-npm_config_registry=https://registry.npmjs.org npm_config_strict_ssl=false npm install
+本分支没有写死域名。你可以在 Cloudflare 后台进入 Worker：
+
+1. 打开 `Settings` 或 `Domains & Routes`。
+2. 添加 Custom Domain。
+3. 填写你要绑定的域名。
+4. 保存后访问 `https://你的域名/ai-km-workshop-0627`。
+
+如果你希望把域名写进 `wrangler.jsonc`，可以添加：
+
+```json
+"routes": [
+  {
+    "pattern": "feedback.example.com",
+    "custom_domain": true
+  }
+]
 ```
 
-这条命令只影响当次安装，不会改你的全局 npm 配置。
+把 `feedback.example.com` 换成你的域名即可。
 
-## 以后怎么改选项
+## 管理端
 
-地点和时间在两个文件里各有一份：
+管理端不设置密码：
 
-- `src/index.ts`：后端校验和接口返回
-- `public/app.js`：页面还没连上接口时的备用显示
+```text
+/ai-km-workshop-0627/admin
+```
 
-改选项时两边保持一致。图片放在 `public/assets/`，页面里通过 `public/app.js` 的 `imageByLocation` 对应。
-
-## 隐私边界
-
-公开投票结果只显示每个人名字的第一个字头像，不显示完整名字，也不显示补充意见。
-
-后台 `/admin-csight-8` 会显示完整姓名、选择和意见。这个后台没有强认证，如果以后想做得更稳，可以再加一个后台口令。
-
-这个项目不用 cookie 识别用户，也不做登录系统。它把“输入的名字”当成身份：同一个名字再次进入时，会拉回这个名字之前提交过的选择；再次提交会覆盖旧选择。
-
-后台有“清空测试数据”按钮，清空前需要二次确认并输入“清空”。清空后所有投票、意见和统计都会归零。
+可以查看总提交人数、三个评分题的均分和分布、两个填空题的逐条回答，并支持下载 CSV 和清空数据。
