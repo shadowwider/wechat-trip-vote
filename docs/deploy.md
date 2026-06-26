@@ -29,13 +29,17 @@
 5. Root directory 留空或填 `/`。
 6. Build command 填 `npm run build`。
 7. Deploy command 填 `npm run deploy`。
-8. 在 `Branch control` 中，把 production branch 设置为：
+8. 初次连接仓库时，页面里通常显示的是 `Git branch`，这里选择：
 
    ```text
    codex/ai-km-workshop-feedback-20260627
    ```
 
 9. 保存并触发构建。构建完成后，用 Worker 域名加上 `/ai-km-workshop-0627` 访问用户端。
+
+连接完成之后，如果以后要切换到另一个投票分支，再进入 `Settings` -> `Builds` -> `Branch control` 修改。也就是说，`production branch` 不一定会在第一次创建页面里以这个名字出现；第一次连接时更常见的字段名是 `Git branch`。
+
+如果你看到的是 `Set up your application`、`创建专用 Git 存储库`、`选择模板` 这类页面，说明你还在 Deploy Button / 模板创建流程里，不是在连接已有仓库的 Workers Builds 流程里。
 
 非 production 分支通常不会自动替换正式线上 Worker。它们可以作为预览或版本，但正式访问哪个分支，取决于 Cloudflare 当前配置的 production branch 或你手动部署的版本。
 

@@ -52,8 +52,10 @@ npm run dev
 1. 进入 Cloudflare Dashboard 的 Workers & Pages。
 2. 打开已有 Worker，或创建一次新的 Worker。
 3. 进入 `Settings` -> `Builds`，连接 GitHub 仓库 `shadowwider/wechat-trip-vote`。
-4. 在 Branch control 里把 production branch 设置为 `codex/ai-km-workshop-feedback-20260627`。
+4. 初次连接仓库时，页面里通常显示的是 `Git branch`，这里选择 `codex/ai-km-workshop-feedback-20260627`。连接完成后，如果要再改分支，才是在 `Settings` -> `Builds` -> `Branch control` 里修改。
 5. 构建命令使用 `npm run build`，部署命令使用 `npm run deploy`。
+
+如果你看到的是 `Set up your application`、`创建专用 Git 存储库`、`选择模板` 这类页面，说明你还在 Deploy Button / 模板创建流程里，不是在连接已有仓库的 Workers Builds 流程里。
 
 如果只是本地手动部署，也可以切到这个分支后运行：
 
