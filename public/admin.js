@@ -1,7 +1,9 @@
+import { startKnowledgeGraph } from "./knowledge-graph.js";
+
 const scoreFields = [
-  { key: "overallScore", label: "整体收获满意度" },
-  { key: "advancedInterest", label: "参加后续进阶课程意愿" },
-  { key: "recommendInterest", label: "推荐他人参加意愿" }
+  { key: "overallScore", label: "整体收获满意度", canvas: "chart-overall", bars: "bars-overall" },
+  { key: "advancedInterest", label: "参加后续进阶课程意愿", canvas: "chart-advanced", bars: "bars-advanced" },
+  { key: "recommendInterest", label: "推荐他人参加意愿", canvas: "chart-recommend", bars: "bars-recommend" }
 ];
 
 const elements = {
@@ -13,18 +15,35 @@ const elements = {
   avgOverall: document.querySelector("#avg-overall"),
   avgAdvanced: document.querySelector("#avg-advanced"),
   avgRecommend: document.querySelector("#avg-recommend"),
-  distributions: document.querySelector("#distributions"),
+  fallbackDistributions: document.querySelector("#fallback-distributions"),
   valuableList: document.querySelector("#valuable-list"),
   deeperList: document.querySelector("#deeper-list"),
   responseList: document.querySelector("#response-list")
 };
 
 let adminState = null;
+let ChartCtor = null;
+let charts = {};
 
+startKnowledgeGraph(document.querySelector("#knowledge-canvas"));
+loadChartLibrary();
 loadAdmin();
+
 elements.refresh.addEventListener("click", loadAdmin);
 elements.downloadCsv.addEventListener("click", downloadCsv);
 elements.clear.addEventListener("click", clearData);
+
+async function loadChartLibrary() {
+  try {
+    const chartModule = await import("https://cdn.jsdelivr.net/npm/chart.js@4.5.0/+esm");
+    ChartCtor = chartModule.Chart;
+    ChartCtor.register(...chartModule.registerables);
+    if (adminState) renderCharts();
+  } catch {
+    ChartCtor = null;
+    renderFallbackDistributions();
+  }
+}
 
 async function loadAdmin() {
   elements.refresh.disabled = true;
@@ -87,9 +106,9 @@ function renderAdmin() {
   elements.avgAdvanced.textContent = formatAverage(adminState.averages.advancedInterest);
   elements.avgRecommend.textContent = formatAverage(adminState.averages.recommendInterest);
 
-  elements.distributions.innerHTML = scoreFields
-    .map((field) => distributionTemplate(field, adminState.distributions[field.key] || []))
-    .join("");
+  renderInlineBars();
+  renderCharts();
+  renderFallbackDistributions();
 
   elements.valuableList.innerHTML =
     responses.length === 0
@@ -105,25 +124,86 @@ function renderAdmin() {
     responses.length === 0 ? emptyTemplate("还没有人提交。") : responses.map(responseTemplate).join("");
 }
 
-function distributionTemplate(field, distribution) {
-  const bars = distribution
-    .map(
-      (item) => `
-        <div class="score-row">
-          <span>${item.score} 分</span>
-          <div class="bar" aria-hidden="true"><i style="width: ${item.percent}%"></i></div>
-          <strong>${item.count}</strong>
-        </div>
-      `
-    )
-    .join("");
+function renderCharts() {
+  if (!adminState || !ChartCtor) return;
 
-  return `
-    <article class="distribution-card">
-      <h3>${escapeHtml(field.label)}</h3>
-      ${bars}
-    </article>
-  `;
+  elements.fallbackDistributions.hidden = true;
+
+  for (const field of scoreFields) {
+    const canvas = document.querySelector(`#${field.canvas}`);
+    canvas.closest(".chart-card")?.classList.add("has-chart");
+    const distribution = adminState.distributions[field.key] || [];
+    const labels = distribution.map((item) => `${item.score} 分`);
+    const values = distribution.map((item) => item.count);
+
+    charts[field.key]?.destroy();
+    charts[field.key] = new ChartCtor(canvas, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: field.label,
+            data: values,
+            backgroundColor: ["#58d6c8", "#8fe0b7", "#f2c66d", "#f08d55", "#ff6b6b"],
+            borderRadius: 8,
+            borderSkipped: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 520 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.parsed.y} 人`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: "#b9c7d8" }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0, color: "#b9c7d8" },
+            grid: { color: "rgba(185, 199, 216, 0.14)" }
+          }
+        }
+      }
+    });
+  }
+}
+
+function renderInlineBars() {
+  if (!adminState) return;
+
+  for (const field of scoreFields) {
+    const container = document.querySelector(`#${field.bars}`);
+    const canvas = document.querySelector(`#${field.canvas}`);
+    canvas.closest(".chart-card")?.classList.toggle("has-chart", Boolean(ChartCtor));
+    const distribution = adminState.distributions[field.key] || [];
+    container.innerHTML = distribution
+      .map(
+        (item) => `
+          <div class="score-row">
+            <span>${item.score} 分</span>
+            <div class="bar" aria-hidden="true"><i style="width: ${Math.max(item.percent, item.count > 0 ? 8 : 0)}%"></i></div>
+            <strong>${item.count}</strong>
+          </div>
+        `
+      )
+      .join("");
+  }
+}
+
+function renderFallbackDistributions() {
+  elements.fallbackDistributions.hidden = true;
+  elements.fallbackDistributions.innerHTML = "";
 }
 
 function quoteTemplate(name, text) {
