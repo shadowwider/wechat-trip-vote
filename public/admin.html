@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0b1220" />
+    <title>工作坊反馈后台</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/admin.js"></script>
+  </head>
+  <body class="survey-page admin-page">
+    <canvas class="knowledge-canvas" id="knowledge-canvas" aria-hidden="true"></canvas>
+
+    <main class="admin-workspace">
+      <section class="admin-hero" aria-labelledby="admin-title">
+        <div>
+          <div class="hero-chip">Admin Intelligence Board</div>
+          <p class="eyebrow">管理端 · AI 和知识管理 / LLM Wiki</p>
+          <h1 id="admin-title">把反馈变成下一版课程决策</h1>
+          <p class="hero-copy">实时查看评分分布、填空反馈和完整提交明细。</p>
+        </div>
+        <div class="admin-actions">
+          <button class="ghost-button" type="button" id="refresh">刷新</button>
+          <button class="ghost-button" type="button" id="download-csv">下载 CSV</button>
+          <button class="danger-button" type="button" id="clear">清空数据</button>
+        </div>
+        <p class="status admin-status" id="admin-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="metric-grid" aria-label="统计概览">
+        <article class="metric-card">
+          <span>提交人数</span>
+          <strong id="total-responses">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>整体收获均分</span>
+          <strong id="avg-overall">-</strong>
+        </article>
+        <article class="metric-card">
+          <span>进阶课程意愿</span>
+          <strong id="avg-advanced">-</strong>
+        </article>
+        <article class="metric-card">
+          <span>推荐他人意愿</span>
+          <strong id="avg-recommend">-</strong>
+        </article>
+      </section>
+
+      <section class="glass-panel">
+        <div class="section-heading">
+          <p class="eyebrow">评分图谱</p>
+          <h2>1-5 分布</h2>
+        </div>
+        <div class="chart-grid">
+          <article class="chart-card">
+            <h3>整体收获</h3>
+            <canvas id="chart-overall" height="220"></canvas>
+            <div class="chart-fallback" id="bars-overall"></div>
+          </article>
+          <article class="chart-card">
+            <h3>进阶意愿</h3>
+            <canvas id="chart-advanced" height="220"></canvas>
+            <div class="chart-fallback" id="bars-advanced"></div>
+          </article>
+          <article class="chart-card">
+            <h3>推荐意愿</h3>
+            <canvas id="chart-recommend" height="220"></canvas>
+            <div class="chart-fallback" id="bars-recommend"></div>
+          </article>
+        </div>
+        <div class="distribution-grid" id="fallback-distributions"></div>
+      </section>
+
+      <section class="glass-panel">
+        <div class="section-heading">
+          <p class="eyebrow">语义反馈</p>
+          <h2>模块与深入方向</h2>
+        </div>
+        <div class="text-response-grid">
+          <div>
+            <h3>最有价值的模块</h3>
+            <div class="quote-list" id="valuable-list"></div>
+          </div>
+          <div>
+            <h3>希望深入的内容</h3>
+            <div class="quote-list" id="deeper-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="glass-panel">
+        <div class="section-heading">
+          <p class="eyebrow">原始记录</p>
+          <h2>每个人的提交</h2>
+        </div>
+        <div class="response-list" id="response-list"></div>
+      </section>
+    </main>
+  </body>
+</html>

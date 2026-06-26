@@ -3,98 +3,164 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0f3b4a" />
+    <meta name="theme-color" content="#0b1220" />
     <meta
       name="description"
-      content="创见 C-Sight 八期小伙伴夏天出行投票，地点和时间都可以多选。"
+      content="领导力 AI 兴趣小组 6 月 27 日工作坊反馈表。"
     />
-    <meta property="og:title" content="创见 C-Sight 八期夏天出行投票" />
-    <meta property="og:description" content="地点和时间都可以多选，投完再看当前结果。" />
-    <meta property="og:image" content="/assets/anji-rafting.jpg" />
-    <title>创见 C-Sight 八期出行投票</title>
+    <meta property="og:title" content="领导力 AI 兴趣小组工作坊反馈" />
+    <meta property="og:description" content="AI 和知识管理 / LLM Wiki 工作坊反馈表" />
+    <title>领导力 AI 兴趣小组工作坊反馈</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.js"></script>
   </head>
-  <body>
-    <main class="shell">
-      <section class="hero" aria-labelledby="page-title">
-        <div class="hero-copy">
-          <p class="eyebrow">创见 C-Sight 八期 · 夏天两天一夜</p>
-          <h1 id="page-title">去哪儿玩，<span class="no-break">大家一起定</span></h1>
-          <p class="hero-text">从上海出发，地点和时间都可以多选。先投票，再看大家的当前选择。</p>
+  <body class="survey-page">
+    <canvas class="knowledge-canvas" id="knowledge-canvas" aria-hidden="true"></canvas>
+
+    <main class="experience-shell">
+      <section class="hero-panel" aria-labelledby="page-title">
+        <div class="hero-chip">LLM Wiki Feedback Lab</div>
+        <p class="eyebrow">2026.06.27 · 领导力 AI 兴趣小组</p>
+        <h1 id="page-title">把这次工作坊反馈整理成下一版知识地图</h1>
+        <p class="hero-copy">
+          主题是 AI 和知识管理。你填写的每个判断，都会成为我们迭代 LLM Wiki 实践课的一个节点。
+        </p>
+
+        <div class="knowledge-strip" aria-hidden="true">
+          <span>Capture</span>
+          <span>Connect</span>
+          <span>Retrieve</span>
+          <span>Synthesize</span>
         </div>
-        <div class="hero-stats" aria-live="polite">
-          <span class="stat-number" id="total-voters">0</span>
-          <span class="stat-label">人已投</span>
+
+        <div class="hero-stats" aria-label="表单信息">
+          <div>
+            <strong>6</strong>
+            <span>个问题</span>
+          </div>
+          <div>
+            <strong>2 min</strong>
+            <span>完成反馈</span>
+          </div>
+          <div>
+            <strong>KV</strong>
+            <span>实时统计</span>
+          </div>
         </div>
       </section>
 
-      <form class="vote-panel" id="vote-form">
-        <label class="name-field">
-          <span>你的名字</span>
-          <input
-            id="voter-name"
-            name="name"
-            autocomplete="name"
-            maxlength="16"
-            placeholder="比如：小顾"
-            required
-          />
-        </label>
-
-        <section class="section-block" aria-labelledby="location-title">
-          <div class="section-heading">
-            <p class="eyebrow">地点</p>
-            <h2 id="location-title">想去哪里</h2>
+      <section class="form-stage" aria-label="反馈表">
+        <form class="survey-card" id="feedback-form" novalidate>
+          <div class="form-topbar">
+            <span class="step-indicator" id="step-indicator">01 / 06</span>
+            <div class="progress-track" aria-hidden="true">
+              <i id="progress-bar"></i>
+            </div>
           </div>
-          <div class="location-grid" id="location-options"></div>
+
+          <section class="survey-step is-active" data-step="0" data-field="name">
+            <p class="step-kicker">Identity</p>
+            <h2>先告诉我怎么称呼你</h2>
+            <p class="step-copy">不用正式，写大家认识你的名字或昵称就行。同名再次提交会更新你的反馈。</p>
+            <label class="text-field solo-field">
+              <span>姓名 / 昵称</span>
+              <input
+                id="name"
+                name="name"
+                autocomplete="name"
+                maxlength="32"
+                placeholder="例如：小顾 / Alex"
+              />
+            </label>
+          </section>
+
+          <section class="survey-step" data-step="1" data-field="overallScore">
+            <p class="step-kicker">Signal 01</p>
+            <h2>这次课程整体收获感如何？</h2>
+            <p class="step-copy">1 分代表收获有限，5 分代表非常有价值。</p>
+            <div class="rating-grid" role="radiogroup" aria-label="课程整体收获满意度">
+              <label><input type="radio" name="overallScore" value="1" /><span><b>1</b><small>较低</small></span></label>
+              <label><input type="radio" name="overallScore" value="2" /><span><b>2</b><small>一般</small></span></label>
+              <label><input type="radio" name="overallScore" value="3" /><span><b>3</b><small>可以</small></span></label>
+              <label><input type="radio" name="overallScore" value="4" /><span><b>4</b><small>很好</small></span></label>
+              <label><input type="radio" name="overallScore" value="5" /><span><b>5</b><small>很强</small></span></label>
+            </div>
+          </section>
+
+          <section class="survey-step" data-step="2" data-field="valuableModule">
+            <p class="step-kicker">Signal 02</p>
+            <h2>哪个具体模块最值得保留？</h2>
+            <p class="step-copy">请写一个你觉得最有价值的环节、方法或案例。</p>
+            <label class="text-field">
+              <span>最有价值的具体模块</span>
+              <textarea
+                id="valuableModule"
+                name="valuableModule"
+                maxlength="500"
+                rows="5"
+                placeholder="例如：LLM Wiki 的搭建框架、卡帕西方法拆解、知识库工作流..."
+              ></textarea>
+            </label>
+          </section>
+
+          <section class="survey-step" data-step="3" data-field="deeperTopics">
+            <p class="step-kicker">Signal 03</p>
+            <h2>下一次应该把哪里讲深？</h2>
+            <p class="step-copy">你可以写工具、流程、场景、团队落地、案例演示，或者任何你想继续追问的地方。</p>
+            <label class="text-field">
+              <span>希望进一步深入的 AI 课程内容</span>
+              <textarea
+                id="deeperTopics"
+                name="deeperTopics"
+                maxlength="500"
+                rows="5"
+                placeholder="例如：知识库维护、团队共创 Wiki、提示词沉淀、资料清洗、案例实操..."
+              ></textarea>
+            </label>
+          </section>
+
+          <section class="survey-step" data-step="4" data-field="advancedInterest">
+            <p class="step-kicker">Signal 04</p>
+            <h2>你愿意参加后续进阶课程吗？</h2>
+            <p class="step-copy">1 分代表暂时不考虑，5 分代表非常愿意。</p>
+            <div class="rating-grid" role="radiogroup" aria-label="参加后续进阶课程意愿">
+              <label><input type="radio" name="advancedInterest" value="1" /><span><b>1</b><small>不太</small></span></label>
+              <label><input type="radio" name="advancedInterest" value="2" /><span><b>2</b><small>观望</small></span></label>
+              <label><input type="radio" name="advancedInterest" value="3" /><span><b>3</b><small>可以</small></span></label>
+              <label><input type="radio" name="advancedInterest" value="4" /><span><b>4</b><small>愿意</small></span></label>
+              <label><input type="radio" name="advancedInterest" value="5" /><span><b>5</b><small>非常</small></span></label>
+            </div>
+          </section>
+
+          <section class="survey-step" data-step="5" data-field="recommendInterest">
+            <p class="step-kicker">Signal 05</p>
+            <h2>你愿意推荐其他人来参加吗？</h2>
+            <p class="step-copy">这会帮助我们判断课程是否值得扩展到更大的小组。</p>
+            <div class="rating-grid" role="radiogroup" aria-label="推荐其他人参加意愿">
+              <label><input type="radio" name="recommendInterest" value="1" /><span><b>1</b><small>不会</small></span></label>
+              <label><input type="radio" name="recommendInterest" value="2" /><span><b>2</b><small>较少</small></span></label>
+              <label><input type="radio" name="recommendInterest" value="3" /><span><b>3</b><small>可能</small></span></label>
+              <label><input type="radio" name="recommendInterest" value="4" /><span><b>4</b><small>愿意</small></span></label>
+              <label><input type="radio" name="recommendInterest" value="5" /><span><b>5</b><small>一定</small></span></label>
+            </div>
+          </section>
+
+          <div class="form-actions">
+            <button class="ghost-button" type="button" id="prev-step">上一步</button>
+            <button class="primary-button" type="button" id="next-step">下一步</button>
+            <button class="primary-button" type="submit" id="submit" hidden>提交反馈</button>
+          </div>
+
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="success-panel" id="success-panel" hidden>
+          <p class="step-kicker">Synced</p>
+          <h2>反馈已进入知识地图</h2>
+          <p>谢谢你。后台会实时汇总评分、模块反馈和下一步课程方向。</p>
+          <button class="ghost-button" type="button" id="restart-form">再提交一份</button>
         </section>
-
-        <section class="section-block" aria-labelledby="date-title">
-          <div class="section-heading">
-            <p class="eyebrow">时间</p>
-            <h2 id="date-title">哪几个日期可以</h2>
-          </div>
-          <div class="date-grid" id="date-options"></div>
-        </section>
-
-        <label class="comment-field">
-          <span>补充意见</span>
-          <textarea
-            id="comment"
-            name="comment"
-            maxlength="300"
-            rows="4"
-            placeholder="比如：更想住一晚、怕晒、想拼车、哪个时间要晚到..."
-          ></textarea>
-        </label>
-
-        <div class="actions">
-          <button class="primary-button" type="submit" id="submit-vote">提交我的选择</button>
-          <button class="secondary-button" type="button" id="view-results" hidden>查看结果</button>
-        </div>
-
-        <p class="privacy-note">结果里只显示每个人名字的第一个字；完整名字和意见只在组织后台看。</p>
-        <p class="status" id="status" role="status" aria-live="polite"></p>
-      </form>
-
-      <section class="results-panel" id="results" aria-labelledby="results-title" hidden>
-        <div class="section-heading">
-          <p class="eyebrow">当前分布</p>
-          <h2 id="results-title">大家怎么选</h2>
-        </div>
-
-        <div class="result-columns">
-          <div>
-            <h3>地点</h3>
-            <div class="result-list" id="location-results"></div>
-          </div>
-          <div>
-            <h3>时间</h3>
-            <div class="result-list" id="date-results"></div>
-          </div>
-        </div>
       </section>
     </main>
   </body>

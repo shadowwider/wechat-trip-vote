@@ -8,12 +8,6 @@
     "binding": "ASSETS",
     "html_handling": "none"
   },
-  "routes": [
-    {
-      "pattern": "csight8.guojlove.com",
-      "custom_domain": true
-    }
-  ],
   "kv_namespaces": [
     {
       "binding": "VOTE_KV"

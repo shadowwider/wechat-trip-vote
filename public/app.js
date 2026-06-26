@@ -1,128 +1,64 @@
-const imageByLocation = {
-  "anji-rafting": "/assets/anji-rafting.jpg",
-  "lingang-waterworld": "/assets/lingang-waterworld.jpg",
-  "hengsha-red-house": "/assets/hengsha-red-house.jpg"
-};
+import { startKnowledgeGraph } from "./knowledge-graph.js";
 
-const fallbackOptions = {
-  locations: [
-    {
-      id: "anji-rafting",
-      label: "安吉漂流",
-      eyebrow: "湖州安吉 · 两天一夜",
-      travel: "上海市中心出发约 220-240km，自驾约 3-3.5 小时。",
-      description: "黄浦江源片区主打绿水青山和户外运动，漂流、竹林、山路都比较有夏天出逃感。",
-      highlights: ["适合想离开城市、玩水又看山", "两天一夜更从容，车程最长但度假感最强"]
-    },
-    {
-      id: "lingang-waterworld",
-      label: "临港耀雪水世界",
-      eyebrow: "上海临港 · 玩水",
-      travel: "上海市中心出发约 70-80km，自驾约 1.5-2 小时。",
-      description: "耀雪冰雪世界是临港的一站式度假综合体，包含雪世界、嬉水乐园、酒店和商业，水世界有室内外玩水空间。",
-      highlights: ["在上海市内，天气不稳也比较稳", "新场馆、配套集中，适合轻装当天到达"]
-    },
-    {
-      id: "hengsha-red-house",
-      label: "崇明横沙岛红房子",
-      eyebrow: "横沙岛 · 慢周末",
-      travel: "上海市中心到长兴岛再上横沙，约 70-90km；含轮渡通常约 2-2.5 小时，周末排队会更久。",
-      description: "横沙岛是上海很特别的留白小岛，红房子连接了城市青年社群和乡村空间，适合聊天、发呆、慢慢玩。",
-      highlights: ["氛围感和朋友局最强", "有旺仔这层关系，组织起来可能更有人情味"]
-    }
-  ],
-  dates: [
-    {
-      id: "jun-final",
-      label: "6 月 27 日 - 6 月 28 日",
-      eyebrow: "周六 - 周日",
-      description: "六月最后一个周末"
-    },
-    {
-      id: "jul-first",
-      label: "7 月 4 日 - 7 月 5 日",
-      eyebrow: "周六 - 周日",
-      description: "七月第一个完整周末"
-    },
-    {
-      id: "jul-second",
-      label: "7 月 11 日 - 7 月 12 日",
-      eyebrow: "周六 - 周日",
-      description: "七月第二个完整周末"
-    }
-  ]
-};
+const form = document.querySelector("#feedback-form");
+const status = document.querySelector("#status");
+const submit = document.querySelector("#submit");
+const next = document.querySelector("#next-step");
+const prev = document.querySelector("#prev-step");
+const progressBar = document.querySelector("#progress-bar");
+const stepIndicator = document.querySelector("#step-indicator");
+const successPanel = document.querySelector("#success-panel");
+const restart = document.querySelector("#restart-form");
+const steps = Array.from(document.querySelectorAll(".survey-step"));
 
-const state = {
-  options: fallbackOptions,
-  poll: null,
-  currentVoteExists: false,
-  loadedName: ""
-};
+let currentStep = 0;
 
-const elements = {
-  form: document.querySelector("#vote-form"),
-  name: document.querySelector("#voter-name"),
-  comment: document.querySelector("#comment"),
-  submit: document.querySelector("#submit-vote"),
-  locationOptions: document.querySelector("#location-options"),
-  dateOptions: document.querySelector("#date-options"),
-  viewResults: document.querySelector("#view-results"),
-  status: document.querySelector("#status"),
-  results: document.querySelector("#results"),
-  locationResults: document.querySelector("#location-results"),
-  dateResults: document.querySelector("#date-results"),
-  totalVoters: document.querySelector("#total-voters")
-};
+startKnowledgeGraph(document.querySelector("#knowledge-canvas"));
+updateStep();
 
-let nameCheckTimer = null;
-let nameCheckToken = 0;
-
-renderOptions();
-loadOptions();
-setResultsGate();
-
-elements.name.addEventListener("input", () => {
-  state.currentVoteExists = false;
-  state.loadedName = "";
-  state.poll = null;
-  elements.results.hidden = true;
-  elements.totalVoters.textContent = "0";
-  setResultsGate();
-  scheduleNameLookup();
+next.addEventListener("click", () => {
+  if (!validateStep(currentStep)) return;
+  currentStep = Math.min(currentStep + 1, steps.length - 1);
+  updateStep();
 });
 
-elements.name.addEventListener("blur", () => {
-  void lookupNameVote();
+prev.addEventListener("click", () => {
+  currentStep = Math.max(currentStep - 1, 0);
+  updateStep();
 });
 
-elements.form.addEventListener("submit", async (event) => {
+restart.addEventListener("click", () => {
+  successPanel.hidden = true;
+  form.hidden = false;
+  currentStep = 0;
+  updateStep();
+  document.querySelector("#name").focus();
+});
+
+form.addEventListener("change", (event) => {
+  if (event.target.matches("input[type='radio']")) {
+    setStatus("", "muted");
+  }
+});
+
+form.addEventListener("input", () => {
+  setStatus("", "muted");
+});
+
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const name = normalizeName(elements.name.value);
-  const locations = getCheckedValues("locations");
-  const dates = getCheckedValues("dates");
-  const comment = normalizeName(elements.comment.value);
+  if (!validateAll()) return;
 
-  if (!name) {
-    setStatus("先写一下名字。", "error");
-    elements.name.focus();
-    return;
-  }
-
-  if (locations.length === 0 || dates.length === 0) {
-    setStatus("地点和时间都至少选一个。", "error");
-    return;
-  }
-
+  const payload = Object.fromEntries(new FormData(form).entries());
   setBusy(true);
-  setStatus(state.currentVoteExists ? "正在更新..." : "正在提交...", "muted");
+  setStatus("正在把反馈写入知识地图...", "muted");
 
   try {
-    const response = await fetch("/api/vote", {
+    const response = await fetch("/api/feedback", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, locations, dates, comment })
+      body: JSON.stringify(payload)
     });
 
     const data = await response.json();
@@ -130,14 +66,11 @@ elements.form.addEventListener("submit", async (event) => {
       throw new Error(data.error || "提交失败了。");
     }
 
-    state.poll = data;
-    state.currentVoteExists = true;
-    state.loadedName = name;
-    updateSummary();
-    renderResults();
-    setResultsGate();
-    elements.results.hidden = true;
-    setStatus("已记下。现在可以查看结果，也可以继续改完再提交。", "success");
+    form.reset();
+    form.hidden = true;
+    successPanel.hidden = false;
+    successPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+    setStatus("", "success");
   } catch (error) {
     setStatus(error.message || "提交失败了，再试一次。", "error");
   } finally {
@@ -145,255 +78,80 @@ elements.form.addEventListener("submit", async (event) => {
   }
 });
 
-elements.viewResults.addEventListener("click", async () => {
-  if (!state.currentVoteExists) {
-    return;
-  }
+function updateStep() {
+  steps.forEach((step, index) => {
+    step.classList.toggle("is-active", index === currentStep);
+  });
 
-  setStatus("正在刷新结果...", "muted");
-  await refreshPoll({ quiet: false });
-  elements.results.hidden = false;
-  elements.results.scrollIntoView({ behavior: "smooth", block: "start" });
-});
+  const isFirst = currentStep === 0;
+  const isLast = currentStep === steps.length - 1;
+  prev.disabled = isFirst;
+  next.hidden = isLast;
+  submit.hidden = !isLast;
+  stepIndicator.textContent = `${String(currentStep + 1).padStart(2, "0")} / ${String(steps.length).padStart(2, "0")}`;
+  progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+  setStatus("", "muted");
 
-async function loadOptions() {
-  try {
-    const response = await fetch("/api/options", { headers: { accept: "application/json" } });
-    if (!response.ok) {
-      throw new Error("选项读取失败。");
-    }
-
-    const data = await response.json();
-    state.options = data.options || fallbackOptions;
-    renderOptions();
-  } catch {
-    renderOptions();
-  }
+  const focusable = steps[currentStep].querySelector("input, textarea");
+  window.setTimeout(() => focusable?.focus({ preventScroll: true }), 80);
 }
 
-function scheduleNameLookup() {
-  window.clearTimeout(nameCheckTimer);
-  nameCheckTimer = window.setTimeout(() => {
-    void lookupNameVote();
-  }, 520);
-}
-
-async function lookupNameVote() {
-  const name = normalizeName(elements.name.value);
-  const token = ++nameCheckToken;
-
-  window.clearTimeout(nameCheckTimer);
-
-  if (!name) {
-    state.currentVoteExists = false;
-    state.loadedName = "";
-    setResultsGate();
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/my-vote?name=${encodeURIComponent(name)}`, {
-      headers: { accept: "application/json" }
-    });
-    if (!response.ok) {
-      throw new Error("读取你的投票失败。");
-    }
-
-    const data = await response.json();
-    if (token !== nameCheckToken || normalizeName(elements.name.value) !== name) {
-      return;
-    }
-
-    state.currentVoteExists = Boolean(data.found);
-    state.loadedName = data.found ? name : "";
-    setResultsGate();
-
-    if (data.found && data.vote) {
-      applyVoteToForm(data.vote);
-      setStatus("找到你之前的投票了，可以修改后再提交。", "success");
-    } else if (elements.status.textContent.includes("找到你之前")) {
-      setStatus("", "muted");
-    }
-  } catch {
-    if (token === nameCheckToken) {
-      state.currentVoteExists = false;
-      state.loadedName = "";
-      setResultsGate();
+function validateAll() {
+  for (let index = 0; index < steps.length; index += 1) {
+    if (!validateStep(index)) {
+      currentStep = index;
+      updateStep();
+      validateStep(index);
+      return false;
     }
   }
+
+  return true;
 }
 
-async function refreshPoll({ quiet }) {
-  try {
-    const response = await fetch("/api/poll", { headers: { accept: "application/json" } });
-    if (!response.ok) {
-      throw new Error("结果读取失败。");
-    }
+function validateStep(index) {
+  const step = steps[index];
+  const field = step.dataset.field;
+  const value = fieldValue(field);
 
-    const data = await response.json();
-    state.poll = data;
-    updateSummary();
-    renderResults();
-    if (!quiet) {
-      setStatus("结果已刷新。", "success");
-    }
-  } catch (error) {
-    if (!quiet) {
-      setStatus(error.message || "结果读取失败。", "error");
-    }
-  }
-}
-
-function renderOptions() {
-  elements.locationOptions.innerHTML = state.options.locations
-    .map((option) => locationOptionTemplate(option))
-    .join("");
-  elements.dateOptions.innerHTML = state.options.dates.map((option) => dateOptionTemplate(option)).join("");
-}
-
-function applyVoteToForm(vote) {
-  for (const input of document.querySelectorAll("input[name='locations'], input[name='dates']")) {
-    input.checked = false;
+  if (!value) {
+    setStatus(messageFor(field), "error");
+    step.querySelector("input, textarea")?.focus();
+    return false;
   }
 
-  for (const id of vote.locations || []) {
-    const input = document.querySelector(`input[name="locations"][value="${cssEscape(id)}"]`);
-    if (input) input.checked = true;
+  return true;
+}
+
+function fieldValue(field) {
+  if (["overallScore", "advancedInterest", "recommendInterest"].includes(field)) {
+    return form.querySelector(`input[name="${field}"]:checked`)?.value || "";
   }
 
-  for (const id of vote.dates || []) {
-    const input = document.querySelector(`input[name="dates"][value="${cssEscape(id)}"]`);
-    if (input) input.checked = true;
-  }
-
-  elements.comment.value = vote.comment || "";
+  return String(form.elements[field]?.value || "").trim();
 }
 
-function locationOptionTemplate(option) {
-  const highlights = Array.isArray(option.highlights)
-    ? `<ul class="option-highlights">${option.highlights.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : "";
+function messageFor(field) {
+  const messages = {
+    name: "先写一下姓名或昵称。",
+    overallScore: "请给课程整体收获打一个分数。",
+    valuableModule: "请写一个最有价值的具体模块。",
+    deeperTopics: "请写一个希望进一步深入的方向。",
+    advancedInterest: "请给后续进阶课程意愿打一个分数。",
+    recommendInterest: "请给推荐他人参加意愿打一个分数。"
+  };
 
-  return `
-    <label class="option-card location-card">
-      <input type="checkbox" name="locations" value="${escapeHtml(option.id)}" />
-      <span class="checkmark" aria-hidden="true"></span>
-      <img src="${imageByLocation[option.id]}" alt="" loading="lazy" />
-      <span class="option-body">
-        <span class="option-meta">${escapeHtml(option.eyebrow || "")}</span>
-        <span class="option-title">${escapeHtml(option.label)}</span>
-        <span class="travel-line">${escapeHtml(option.travel || "")}</span>
-        <span class="option-copy">${escapeHtml(option.description || "")}</span>
-        ${highlights}
-      </span>
-    </label>
-  `;
-}
-
-function dateOptionTemplate(option) {
-  return `
-    <label class="option-card date-card">
-      <input type="checkbox" name="dates" value="${escapeHtml(option.id)}" />
-      <span class="checkmark" aria-hidden="true"></span>
-      <span class="date-main">${escapeHtml(option.label)}</span>
-      <span class="option-title">${escapeHtml(option.eyebrow || "")}</span>
-      <span class="option-copy">${escapeHtml(option.description || "")}</span>
-    </label>
-  `;
-}
-
-function renderResults() {
-  const poll = state.poll;
-  if (!poll) {
-    return;
-  }
-
-  elements.locationResults.innerHTML = poll.results.locations
-    .map((result) => resultTemplate(result, poll.totalVoters))
-    .join("");
-  elements.dateResults.innerHTML = poll.results.dates
-    .map((result) => resultTemplate(result, poll.totalVoters))
-    .join("");
-}
-
-function resultTemplate(result, totalVoters) {
-  const percent = totalVoters === 0 ? 0 : Math.round((result.count / totalVoters) * 100);
-  const chips =
-    result.voters.length === 0
-      ? `<span class="empty-voters">还没人选</span>`
-      : result.voters.map((voter) => voterChipTemplate(voter)).join("");
-
-  return `
-    <article class="result-item">
-      <div class="result-topline">
-        <strong>${escapeHtml(result.label)}</strong>
-        <span>${result.count} 人 · ${percent}%</span>
-      </div>
-      <div class="bar" aria-hidden="true">
-        <span style="width: ${percent}%"></span>
-      </div>
-      <div class="voter-list">${chips}</div>
-    </article>
-  `;
-}
-
-function voterChipTemplate(voter) {
-  const avatar = voter.avatar || "?";
-  return `
-    <span class="voter-chip avatar-only" title="一位已投票的小伙伴">
-      <span class="avatar" style="--avatar-bg: ${avatarColor(avatar)}">${escapeHtml(avatar)}</span>
-    </span>
-  `;
-}
-
-function updateSummary() {
-  elements.totalVoters.textContent = state.poll?.totalVoters ?? 0;
-}
-
-function setResultsGate() {
-  elements.viewResults.hidden = !state.currentVoteExists;
-  elements.submit.textContent = state.currentVoteExists ? "修改我的选择" : "提交我的选择";
-}
-
-function getCheckedValues(name) {
-  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map((input) => input.value);
+  return messages[field] || "这一题还没有填写。";
 }
 
 function setBusy(isBusy) {
-  elements.form.classList.toggle("is-busy", isBusy);
-  for (const button of elements.form.querySelectorAll("button")) {
-    button.disabled = isBusy;
-  }
+  submit.disabled = isBusy;
+  next.disabled = isBusy;
+  prev.disabled = isBusy || currentStep === 0;
+  form.classList.toggle("is-busy", isBusy);
 }
 
 function setStatus(message, tone = "muted") {
-  elements.status.textContent = message;
-  elements.status.dataset.tone = tone;
-}
-
-function normalizeName(value) {
-  return String(value || "").trim().replace(/\s+/g, " ");
-}
-
-function avatarColor(value) {
-  const palette = ["#0f3b4a", "#2b7a78", "#7a3e2b", "#6b5b95", "#b94937", "#5d963d", "#1f5f8b"];
-  const code = Array.from(value).reduce((sum, char) => sum + char.codePointAt(0), 0);
-  return palette[code % palette.length];
-}
-
-function cssEscape(value) {
-  if (window.CSS?.escape) {
-    return CSS.escape(value);
-  }
-
-  return String(value).replace(/"/g, '\\"');
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  status.textContent = message;
+  status.dataset.tone = tone;
 }

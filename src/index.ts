@@ -1,90 +1,55 @@
-type LocationId = "anji-rafting" | "lingang-waterworld" | "hengsha-red-house";
-type DateId = "jun-final" | "jul-first" | "jul-second";
+type Score = 1 | 2 | 3 | 4 | 5;
+type ScoreField = "overallScore" | "advancedInterest" | "recommendInterest";
 
 interface Env {
   ASSETS: Fetcher;
   VOTE_KV: KVNamespace;
 }
 
-interface VoteRecord {
+interface FeedbackRecord {
   name: string;
-  avatar: string;
-  locations: LocationId[];
-  dates: DateId[];
-  comment: string;
+  overallScore: Score;
+  valuableModule: string;
+  deeperTopics: string;
+  advancedInterest: Score;
+  recommendInterest: Score;
+  createdAt: string;
   updatedAt: string;
 }
 
-interface PollData {
+interface FeedbackData {
   version: 1;
   updatedAt: string | null;
-  votes: Record<string, VoteRecord>;
+  responses: Record<string, FeedbackRecord>;
 }
 
-interface PublicOption {
-  id: string;
-  label: string;
-  eyebrow?: string;
-  description?: string;
-  travel?: string;
-  highlights?: string[];
+interface ParsedFeedback {
+  key: string;
+  name: string;
+  overallScore: Score;
+  valuableModule: string;
+  deeperTopics: string;
+  advancedInterest: Score;
+  recommendInterest: Score;
 }
 
-const POLL_KEY = "trip-vote:csight-8-summer-2026:v2";
+const FORM_PATH = "/ai-km-workshop-0627";
+const ADMIN_PATH = "/ai-km-workshop-0627/admin";
+const FEEDBACK_KEY = "feedback:leadership-ai-km-workshop-2026-06-27:v1";
 
-const LOCATION_OPTIONS: PublicOption[] = [
-  {
-    id: "anji-rafting",
-    label: "安吉漂流",
-    eyebrow: "湖州安吉 · 两天一夜",
-    travel: "上海市中心出发约 220-240km，自驾约 3-3.5 小时。",
-    description:
-      "黄浦江源片区主打绿水青山和户外运动，漂流、竹林、山路都比较有夏天出逃感。",
-    highlights: ["适合想离开城市、玩水又看山", "两天一夜更从容，车程最长但度假感最强"]
-  },
-  {
-    id: "lingang-waterworld",
-    label: "临港耀雪水世界",
-    eyebrow: "上海临港 · 玩水",
-    travel: "上海市中心出发约 70-80km，自驾约 1.5-2 小时。",
-    description:
-      "耀雪冰雪世界是临港的一站式度假综合体，包含雪世界、嬉水乐园、酒店和商业，水世界有室内外玩水空间。",
-    highlights: ["在上海市内，天气不稳也比较稳", "新场馆、配套集中，适合轻装当天到达"]
-  },
-  {
-    id: "hengsha-red-house",
-    label: "崇明横沙岛红房子",
-    eyebrow: "横沙岛 · 慢周末",
-    travel: "上海市中心到长兴岛再上横沙，约 70-90km；含轮渡通常约 2-2.5 小时，周末排队会更久。",
-    description:
-      "横沙岛是上海很特别的留白小岛，红房子连接了城市青年社群和乡村空间，适合聊天、发呆、慢慢玩。",
-    highlights: ["氛围感和朋友局最强", "有旺仔这层关系，组织起来可能更有人情味"]
-  }
+const SCORE_FIELDS: Array<{ key: ScoreField; label: string }> = [
+  { key: "overallScore", label: "课程整体收获满意度" },
+  { key: "advancedInterest", label: "参加后续进阶课程意愿" },
+  { key: "recommendInterest", label: "推荐他人参加意愿" }
 ];
 
-const DATE_OPTIONS: PublicOption[] = [
-  {
-    id: "jun-final",
-    label: "6 月 27 日 - 6 月 28 日",
-    eyebrow: "周六 - 周日",
-    description: "六月最后一个周末"
-  },
-  {
-    id: "jul-first",
-    label: "7 月 4 日 - 7 月 5 日",
-    eyebrow: "周六 - 周日",
-    description: "七月第一个完整周末"
-  },
-  {
-    id: "jul-second",
-    label: "7 月 11 日 - 7 月 12 日",
-    eyebrow: "周六 - 周日",
-    description: "七月第二个完整周末"
-  }
-];
-
-const LOCATION_IDS = new Set(LOCATION_OPTIONS.map((option) => option.id));
-const DATE_IDS = new Set(DATE_OPTIONS.map((option) => option.id));
+const EVENT_META = {
+  title: "领导力 AI 兴趣小组工作坊反馈",
+  subtitle: "AI 和知识管理 / LLM Wiki",
+  date: "2026-06-27",
+  formPath: FORM_PATH,
+  adminPath: ADMIN_PATH
+};
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -95,52 +60,42 @@ export default {
     }
 
     if (url.pathname === "/api/health") {
-      return json({ ok: true, service: "wechat-trip-vote" });
+      return json({ ok: true, service: "ai-km-workshop-feedback" });
     }
 
     if (url.pathname === "/") {
+      return Response.redirect(new URL(FORM_PATH, url.origin).toString(), 302);
+    }
+
+    if (isPath(url.pathname, FORM_PATH)) {
       const indexUrl = new URL("/index.html", url.origin);
       return env.ASSETS.fetch(new Request(indexUrl, request));
     }
 
-    if (url.pathname === "/api/options" && request.method === "GET") {
-      return json({ options: { locations: LOCATION_OPTIONS, dates: DATE_OPTIONS } });
-    }
-
-    if (url.pathname === "/api/poll" && request.method === "GET") {
-      const poll = await loadPoll(env);
-      return json(toPublicPoll(poll));
-    }
-
-    if (url.pathname === "/api/my-vote" && request.method === "GET") {
-      const poll = await loadPoll(env);
-      return json(toMyVote(url, poll));
-    }
-
-    if (url.pathname === "/api/admin" && request.method === "GET") {
-      const poll = await loadPoll(env);
-      return json(toAdminPoll(poll));
-    }
-
-    if (url.pathname === "/api/admin" && request.method === "DELETE") {
-      await env.VOTE_KV.delete(POLL_KEY);
-      return json(toAdminPoll(emptyPoll()));
-    }
-
-    if (url.pathname === "/api/vote" && request.method === "POST") {
-      return submitVote(request, env);
-    }
-
-    if (url.pathname === "/admin-csight-8") {
-      const adminUrl = new URL("/admin-csight-8.html", url.origin);
+    if (isPath(url.pathname, ADMIN_PATH)) {
+      const adminUrl = new URL("/admin.html", url.origin);
       return env.ASSETS.fetch(new Request(adminUrl, request));
+    }
+
+    if (url.pathname === "/api/feedback" && request.method === "POST") {
+      return submitFeedback(request, env);
+    }
+
+    if (url.pathname === "/api/admin/feedback" && request.method === "GET") {
+      const feedback = await loadFeedback(env);
+      return json(toAdminFeedback(feedback));
+    }
+
+    if (url.pathname === "/api/admin/feedback" && request.method === "DELETE") {
+      await env.VOTE_KV.delete(FEEDBACK_KEY);
+      return json(toAdminFeedback(emptyFeedback()));
     }
 
     return env.ASSETS.fetch(request);
   }
 };
 
-async function submitVote(request: Request, env: Env): Promise<Response> {
+async function submitFeedback(request: Request, env: Env): Promise<Response> {
   let body: unknown;
 
   try {
@@ -149,241 +104,208 @@ async function submitVote(request: Request, env: Env): Promise<Response> {
     return json({ error: "这次提交没有读到内容，再试一次。" }, 400);
   }
 
-  const parsed = parseVote(body);
+  const parsed = parseFeedback(body);
   if ("error" in parsed) {
     return json({ error: parsed.error }, 400);
   }
 
-  const poll = await loadPoll(env);
+  const feedback = await loadFeedback(env);
   const now = new Date().toISOString();
-  poll.votes[parsed.key] = {
+  const existing = feedback.responses[parsed.key];
+
+  feedback.responses[parsed.key] = {
     name: parsed.name,
-    avatar: firstChar(parsed.name),
-    locations: parsed.locations,
-    dates: parsed.dates,
-    comment: parsed.comment,
+    overallScore: parsed.overallScore,
+    valuableModule: parsed.valuableModule,
+    deeperTopics: parsed.deeperTopics,
+    advancedInterest: parsed.advancedInterest,
+    recommendInterest: parsed.recommendInterest,
+    createdAt: existing?.createdAt ?? now,
     updatedAt: now
   };
-  poll.updatedAt = now;
+  feedback.updatedAt = now;
 
-  await env.VOTE_KV.put(POLL_KEY, JSON.stringify(poll));
-  return json(toPublicPoll(poll, parsed.key), 201);
+  await env.VOTE_KV.put(FEEDBACK_KEY, JSON.stringify(feedback));
+  return json({ ok: true, event: EVENT_META }, existing ? 200 : 201);
 }
 
-function parseVote(body: unknown):
-  | { key: string; name: string; locations: LocationId[]; dates: DateId[]; comment: string }
-  | { error: string } {
+function parseFeedback(body: unknown): ParsedFeedback | { error: string } {
   if (!isObject(body)) {
     return { error: "提交内容格式不对。" };
   }
 
-  const name = normalizeName(body.name);
+  const name = normalizeText(body.name, 32);
   if (!name) {
-    return { error: "先写一下你的名字。" };
+    return { error: "请填写姓名或昵称。" };
   }
 
-  if (Array.from(name).length > 16) {
-    return { error: "名字太长啦，16 个字以内就好。" };
+  const overallScore = normalizeScore(body.overallScore);
+  if (!overallScore) {
+    return { error: "请选择课程整体收获满意度。" };
   }
 
-  const locations = normalizeIds<LocationId>(body.locations, LOCATION_IDS);
-  if (locations.length === 0) {
-    return { error: "地点至少选一个。" };
+  const valuableModule = normalizeText(body.valuableModule, 500);
+  if (!valuableModule) {
+    return { error: "请填写你认为最有价值的具体模块。" };
   }
 
-  const dates = normalizeIds<DateId>(body.dates, DATE_IDS);
-  if (dates.length === 0) {
-    return { error: "时间至少选一个。" };
+  const deeperTopics = normalizeText(body.deeperTopics, 500);
+  if (!deeperTopics) {
+    return { error: "请填写你希望进一步深入的 AI 课程内容。" };
+  }
+
+  const advancedInterest = normalizeScore(body.advancedInterest);
+  if (!advancedInterest) {
+    return { error: "请选择参加后续进阶课程意愿。" };
+  }
+
+  const recommendInterest = normalizeScore(body.recommendInterest);
+  if (!recommendInterest) {
+    return { error: "请选择推荐他人参加意愿。" };
   }
 
   return {
     key: name.toLocaleLowerCase("zh-CN"),
     name,
-    locations,
-    dates,
-    comment: normalizeComment(body.comment)
+    overallScore,
+    valuableModule,
+    deeperTopics,
+    advancedInterest,
+    recommendInterest
   };
 }
 
-async function loadPoll(env: Env): Promise<PollData> {
-  const stored = await env.VOTE_KV.get<PollData>(POLL_KEY, "json");
-  if (stored && stored.version === 1 && isObject(stored.votes)) {
-    return {
-      version: 1,
-      updatedAt: stored.updatedAt ?? null,
-      votes: Object.fromEntries(
-        Object.entries(stored.votes).map(([key, vote]) => [
-          key,
-          {
-            name: vote.name,
-            avatar: vote.avatar || firstChar(vote.name),
-            locations: normalizeIds<LocationId>(vote.locations, LOCATION_IDS),
-            dates: normalizeIds<DateId>(vote.dates, DATE_IDS),
-            comment: typeof vote.comment === "string" ? vote.comment : "",
-            updatedAt: vote.updatedAt
-          }
-        ])
-      )
-    };
+async function loadFeedback(env: Env): Promise<FeedbackData> {
+  const stored = await env.VOTE_KV.get<FeedbackData>(FEEDBACK_KEY, "json");
+  if (!stored || stored.version !== 1 || !isObject(stored.responses)) {
+    return emptyFeedback();
   }
 
-  return emptyPoll();
+  return {
+    version: 1,
+    updatedAt: typeof stored.updatedAt === "string" ? stored.updatedAt : null,
+    responses: Object.fromEntries(
+      Object.entries(stored.responses)
+        .map(([key, response]) => {
+          const normalized = normalizeStoredResponse(response);
+          return normalized ? [key, normalized] : null;
+        })
+        .filter((entry): entry is [string, FeedbackRecord] => Boolean(entry))
+    )
+  };
 }
 
-function emptyPoll(): PollData {
+function normalizeStoredResponse(value: unknown): FeedbackRecord | null {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  const name = normalizeText(value.name, 32);
+  const overallScore = normalizeScore(value.overallScore);
+  const valuableModule = normalizeText(value.valuableModule, 500);
+  const deeperTopics = normalizeText(value.deeperTopics, 500);
+  const advancedInterest = normalizeScore(value.advancedInterest);
+  const recommendInterest = normalizeScore(value.recommendInterest);
+  const createdAt = typeof value.createdAt === "string" ? value.createdAt : "";
+  const updatedAt = typeof value.updatedAt === "string" ? value.updatedAt : createdAt;
+
+  if (
+    !name ||
+    !overallScore ||
+    !valuableModule ||
+    !deeperTopics ||
+    !advancedInterest ||
+    !recommendInterest ||
+    !updatedAt
+  ) {
+    return null;
+  }
+
+  return {
+    name,
+    overallScore,
+    valuableModule,
+    deeperTopics,
+    advancedInterest,
+    recommendInterest,
+    createdAt: createdAt || updatedAt,
+    updatedAt
+  };
+}
+
+function emptyFeedback(): FeedbackData {
   return {
     version: 1,
     updatedAt: null,
-    votes: {}
+    responses: {}
   };
 }
 
-function toPublicPoll(poll: PollData, currentKey?: string) {
-  const votes = sortedVotes(poll);
-  const currentVote = currentKey ? poll.votes[currentKey] : null;
-
+function toAdminFeedback(feedback: FeedbackData) {
+  const responses = sortedResponses(feedback);
   return {
-    options: {
-      locations: LOCATION_OPTIONS,
-      dates: DATE_OPTIONS
-    },
-    updatedAt: poll.updatedAt,
-    totalVoters: votes.length,
-    myVote: currentVote ? toEditableVote(currentVote) : null,
-    results: {
-      locations: buildPublicResults(LOCATION_OPTIONS, votes, "locations"),
-      dates: buildPublicResults(DATE_OPTIONS, votes, "dates")
-    }
+    event: EVENT_META,
+    updatedAt: feedback.updatedAt,
+    totalResponses: responses.length,
+    averages: Object.fromEntries(
+      SCORE_FIELDS.map((field) => [field.key, averageScore(responses, field.key)])
+    ),
+    distributions: Object.fromEntries(
+      SCORE_FIELDS.map((field) => [field.key, scoreDistribution(responses, field.key)])
+    ),
+    responses
   };
 }
 
-function toAdminPoll(poll: PollData) {
-  const votes = sortedVotes(poll);
-  return {
-    options: {
-      locations: LOCATION_OPTIONS,
-      dates: DATE_OPTIONS
-    },
-    updatedAt: poll.updatedAt,
-    totalVoters: votes.length,
-    votes,
-    results: {
-      locations: buildAdminResults(LOCATION_OPTIONS, votes, "locations"),
-      dates: buildAdminResults(DATE_OPTIONS, votes, "dates")
-    }
-  };
+function sortedResponses(feedback: FeedbackData): FeedbackRecord[] {
+  return Object.values(feedback.responses).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
-function toMyVote(url: URL, poll: PollData) {
-  const name = normalizeName(url.searchParams.get("name"));
-  if (!name) {
-    return { found: false, vote: null };
+function averageScore(responses: FeedbackRecord[], field: ScoreField): number | null {
+  if (responses.length === 0) {
+    return null;
   }
 
-  const vote = poll.votes[name.toLocaleLowerCase("zh-CN")];
-  return {
-    found: Boolean(vote),
-    vote: vote ? toEditableVote(vote) : null
-  };
+  const total = responses.reduce((sum, response) => sum + response[field], 0);
+  return Number((total / responses.length).toFixed(2));
 }
 
-function sortedVotes(poll: PollData): VoteRecord[] {
-  return Object.values(poll.votes).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-}
-
-function buildPublicResults(
-  options: PublicOption[],
-  votes: VoteRecord[],
-  field: "locations" | "dates"
-) {
-  return options.map((option) => {
-    const voters = votes
-      .filter((vote) => vote[field].includes(option.id as never))
-      .map((vote) => ({
-        avatar: vote.avatar,
-        updatedAt: vote.updatedAt
-      }));
-
-    return {
-      id: option.id,
-      label: option.label,
-      count: voters.length,
-      voters
-    };
+function scoreDistribution(responses: FeedbackRecord[], field: ScoreField) {
+  return ([1, 2, 3, 4, 5] as Score[]).map((score) => {
+    const count = responses.filter((response) => response[field] === score).length;
+    const percent = responses.length === 0 ? 0 : Math.round((count / responses.length) * 100);
+    return { score, count, percent };
   });
 }
 
-function buildAdminResults(
-  options: PublicOption[],
-  votes: VoteRecord[],
-  field: "locations" | "dates"
-) {
-  return options.map((option) => {
-    const voters = votes
-      .filter((vote) => vote[field].includes(option.id as never))
-      .map((vote) => ({
-        name: vote.name,
-        avatar: vote.avatar,
-        comment: vote.comment,
-        updatedAt: vote.updatedAt
-      }));
-
-    return {
-      id: option.id,
-      label: option.label,
-      count: voters.length,
-      voters
-    };
-  });
-}
-
-function toEditableVote(vote: VoteRecord) {
-  return {
-    avatar: vote.avatar,
-    locations: vote.locations,
-    dates: vote.dates,
-    comment: vote.comment,
-    updatedAt: vote.updatedAt
-  };
-}
-
-function normalizeIds<T extends string>(value: unknown, allowedIds: Set<string>): T[] {
-  if (!Array.isArray(value)) {
-    return [];
+function normalizeScore(value: unknown): Score | null {
+  const numberValue = typeof value === "string" ? Number(value) : value;
+  if (
+    typeof numberValue === "number" &&
+    Number.isInteger(numberValue) &&
+    numberValue >= 1 &&
+    numberValue <= 5
+  ) {
+    return numberValue as Score;
   }
 
-  const uniqueIds = new Set<T>();
-  for (const item of value) {
-    if (typeof item === "string" && allowedIds.has(item)) {
-      uniqueIds.add(item as T);
-    }
-  }
-
-  return Array.from(uniqueIds);
+  return null;
 }
 
-function normalizeName(value: unknown): string {
+function normalizeText(value: unknown, maxLength: number): string {
   if (typeof value !== "string") {
     return "";
   }
 
-  return value.trim().replace(/\s+/g, " ");
-}
-
-function normalizeComment(value: unknown): string {
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  return value.trim().replace(/\s+/g, " ").slice(0, 300);
-}
-
-function firstChar(name: string): string {
-  return Array.from(name.trim())[0] ?? "?";
+  return value.trim().replace(/\s+/g, " ").slice(0, maxLength);
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isPath(pathname: string, expected: string): boolean {
+  return pathname === expected || pathname === `${expected}/`;
 }
 
 function json(data: unknown, status = 200): Response {
