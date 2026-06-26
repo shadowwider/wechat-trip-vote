@@ -4,6 +4,8 @@
 
 主题：AI 和知识管理 / LLM Wiki。
 
+不要用 Deploy to Cloudflare 模板按钮部署这个分支。那个按钮会把源码克隆成一个新的 Git 仓库，更适合公开模板，不适合我们“一个仓库里多个投票分支”的工作流。
+
 ## 页面
 
 - 用户端：`/ai-km-workshop-0627`
@@ -45,10 +47,23 @@ npm run dev
 
 ## 部署
 
+推荐方式是在 Cloudflare 里连接已有 Worker 和已有 GitHub 仓库：
+
+1. 进入 Cloudflare Dashboard 的 Workers & Pages。
+2. 打开已有 Worker，或创建一次新的 Worker。
+3. 进入 `Settings` -> `Builds`，连接 GitHub 仓库 `shadowwider/wechat-trip-vote`。
+4. 初次连接仓库时，页面里通常显示的是 `Git branch`，这里选择 `codex/ai-km-workshop-feedback-20260627`。连接完成后，如果要再改分支，才是在 `Settings` -> `Builds` -> `Branch control` 里修改。
+5. 构建命令使用 `npm run build`，部署命令使用 `npm run deploy`。
+
+如果你看到的是 `Set up your application`、`创建专用 Git 存储库`、`选择模板` 这类页面，说明你还在 Deploy Button / 模板创建流程里，不是在连接已有仓库的 Workers Builds 流程里。
+
+如果只是本地手动部署，也可以切到这个分支后运行：
+
 ```bash
+npm install
 npm run deploy
 ```
 
-如果你使用 Cloudflare 的 GitHub 集成，把当前要上线的投票分支设置为 production branch。这个分支更新后，Cloudflare 会按该分支构建正式部署。
+第一次本地部署时 Wrangler 会要求登录 Cloudflare。
 
 域名可以在 Cloudflare Worker 的 Domains & Routes 里单独绑定。本分支没有硬编码自定义域名。
