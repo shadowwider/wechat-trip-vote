@@ -4,6 +4,10 @@
 
 主题：AI 和知识管理 / LLM Wiki。
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fshadowwider%2Fwechat-trip-vote%2Ftree%2Fcodex%2Fai-km-workshop-feedback-20260627)
+
+如果按钮页面没有自动识别当前分支，请在 Cloudflare 的仓库/分支选择里手动选择 `codex/ai-km-workshop-feedback-20260627`。
+
 ## 页面
 
 - 用户端：`/ai-km-workshop-0627`
@@ -44,6 +48,8 @@ npm run dev
 打开 Wrangler 给出的本地地址后，访问 `/ai-km-workshop-0627`。
 
 ## 部署
+
+推荐先点 README 顶部的 Deploy 按钮。
 
 ```bash
 npm run deploy

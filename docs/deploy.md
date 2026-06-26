@@ -4,6 +4,8 @@
 
 这个分支仍然是 Cloudflare Workers 项目，沿用原来的 `wrangler.jsonc` 和 `VOTE_KV` 绑定。
 
+README 顶部有 Deploy to Cloudflare 按钮，可以先用它部署。如果按钮页面没有自动识别分支，请手动选择 `codex/ai-km-workshop-feedback-20260627`。
+
 用户端路径：
 
 ```text
