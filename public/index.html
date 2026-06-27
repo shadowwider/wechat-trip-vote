@@ -36,7 +36,7 @@
 
         <div class="hero-stats" aria-label="表单信息">
           <div>
-            <strong>6</strong>
+            <strong>7</strong>
             <span>个问题</span>
           </div>
           <div>
@@ -53,7 +53,7 @@
       <section class="form-stage" aria-label="反馈表">
         <form class="survey-card" id="feedback-form" novalidate>
           <div class="form-topbar">
-            <span class="step-indicator" id="step-indicator">01 / 06</span>
+            <span class="step-indicator" id="step-indicator">01 / 07</span>
             <div class="progress-track" aria-hidden="true">
               <i id="progress-bar"></i>
             </div>
@@ -144,6 +144,22 @@
               <label><input type="radio" name="recommendInterest" value="4" /><span><b>4</b><small>愿意</small></span></label>
               <label><input type="radio" name="recommendInterest" value="5" /><span><b>5</b><small>一定</small></span></label>
             </div>
+          </section>
+
+          <section class="survey-step" data-step="6" data-field="eventComplaint">
+            <p class="step-kicker">Signal 06</p>
+            <h2>关于这次活动，想吐槽一下什么？</h2>
+            <p class="step-copy">可以写流程、节奏、内容、互动或任何真实感受。我们会认真看。</p>
+            <label class="text-field">
+              <span>关于这次活动我要吐槽一下</span>
+              <textarea
+                id="eventComplaint"
+                name="eventComplaint"
+                maxlength="700"
+                rows="5"
+                placeholder="例如：节奏可以更慢一点、实操时间可以更多、某个概念还想再展开..."
+              ></textarea>
+            </label>
           </section>
 
           <div class="form-actions">

@@ -138,7 +138,8 @@ function messageFor(field) {
     valuableModule: "请写一个最有价值的具体模块。",
     deeperTopics: "请写一个希望进一步深入的方向。",
     advancedInterest: "请给后续进阶课程意愿打一个分数。",
-    recommendInterest: "请给推荐他人参加意愿打一个分数。"
+    recommendInterest: "请给推荐他人参加意愿打一个分数。",
+    eventComplaint: "请写一句关于这次活动的吐槽或建议。"
   };
 
   return messages[field] || "这一题还没有填写。";

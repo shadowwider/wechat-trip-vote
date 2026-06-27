@@ -13,6 +13,7 @@ interface FeedbackRecord {
   deeperTopics: string;
   advancedInterest: Score;
   recommendInterest: Score;
+  eventComplaint: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,6 +32,7 @@ interface ParsedFeedback {
   deeperTopics: string;
   advancedInterest: Score;
   recommendInterest: Score;
+  eventComplaint: string;
 }
 
 const FORM_PATH = "/ai-km-workshop-0627";
@@ -120,6 +122,7 @@ async function submitFeedback(request: Request, env: Env): Promise<Response> {
     deeperTopics: parsed.deeperTopics,
     advancedInterest: parsed.advancedInterest,
     recommendInterest: parsed.recommendInterest,
+    eventComplaint: parsed.eventComplaint,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now
   };
@@ -164,6 +167,11 @@ function parseFeedback(body: unknown): ParsedFeedback | { error: string } {
     return { error: "请选择推荐他人参加意愿。" };
   }
 
+  const eventComplaint = normalizeText(body.eventComplaint, 700);
+  if (!eventComplaint) {
+    return { error: "请填写一句关于这次活动的吐槽或建议。" };
+  }
+
   return {
     key: name.toLocaleLowerCase("zh-CN"),
     name,
@@ -171,7 +179,8 @@ function parseFeedback(body: unknown): ParsedFeedback | { error: string } {
     valuableModule,
     deeperTopics,
     advancedInterest,
-    recommendInterest
+    recommendInterest,
+    eventComplaint
   };
 }
 
@@ -206,6 +215,7 @@ function normalizeStoredResponse(value: unknown): FeedbackRecord | null {
   const deeperTopics = normalizeText(value.deeperTopics, 500);
   const advancedInterest = normalizeScore(value.advancedInterest);
   const recommendInterest = normalizeScore(value.recommendInterest);
+  const eventComplaint = normalizeText(value.eventComplaint, 700);
   const createdAt = typeof value.createdAt === "string" ? value.createdAt : "";
   const updatedAt = typeof value.updatedAt === "string" ? value.updatedAt : createdAt;
 
@@ -228,6 +238,7 @@ function normalizeStoredResponse(value: unknown): FeedbackRecord | null {
     deeperTopics,
     advancedInterest,
     recommendInterest,
+    eventComplaint,
     createdAt: createdAt || updatedAt,
     updatedAt
   };

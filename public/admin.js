@@ -17,6 +17,7 @@ const elements = {
   avgRecommend: document.querySelector("#avg-recommend"),
   valuableList: document.querySelector("#valuable-list"),
   deeperList: document.querySelector("#deeper-list"),
+  complaintList: document.querySelector("#complaint-list"),
   responseList: document.querySelector("#response-list")
 };
 
@@ -92,18 +93,20 @@ function renderAdmin() {
 
   renderInlineBars();
 
-  elements.valuableList.innerHTML =
-    responses.length === 0
-      ? emptyTemplate("暂无反馈")
-      : responses.map((response) => quoteTemplate(response.name, response.valuableModule)).join("");
-
-  elements.deeperList.innerHTML =
-    responses.length === 0
-      ? emptyTemplate("暂无反馈")
-      : responses.map((response) => quoteTemplate(response.name, response.deeperTopics)).join("");
+  renderQuoteList(elements.valuableList, responses, "valuableModule", "暂无反馈");
+  renderQuoteList(elements.deeperList, responses, "deeperTopics", "暂无反馈");
+  renderQuoteList(elements.complaintList, responses, "eventComplaint", "暂无吐槽");
 
   elements.responseList.innerHTML =
     responses.length === 0 ? emptyTemplate("还没有人提交。") : responses.map(responseTemplate).join("");
+}
+
+function renderQuoteList(container, responses, key, emptyText) {
+  const items = responses.filter((response) => String(response[key] || "").trim());
+  container.innerHTML =
+    items.length === 0
+      ? emptyTemplate(emptyText)
+      : items.map((response) => quoteTemplate(response.name, response[key])).join("");
 }
 
 function renderInlineBars() {
@@ -159,6 +162,8 @@ function responseTemplate(response) {
         <dd>${response.advancedInterest} / 5</dd>
         <dt>推荐他人</dt>
         <dd>${response.recommendInterest} / 5</dd>
+        <dt>活动吐槽</dt>
+        <dd>${escapeHtml(response.eventComplaint || "")}</dd>
       </dl>
     </article>
   `;
@@ -170,7 +175,7 @@ function downloadCsv() {
   }
 
   const rows = [
-    ["姓名/昵称", "整体收获满意度", "最有价值模块", "希望深入内容", "参加进阶课程意愿", "推荐他人参加意愿", "首次提交时间", "最近更新时间"],
+    ["姓名/昵称", "整体收获满意度", "最有价值模块", "希望深入内容", "参加进阶课程意愿", "推荐他人参加意愿", "活动吐槽", "首次提交时间", "最近更新时间"],
     ...adminState.responses.map((response) => [
       response.name,
       response.overallScore,
@@ -178,6 +183,7 @@ function downloadCsv() {
       response.deeperTopics,
       response.advancedInterest,
       response.recommendInterest,
+      response.eventComplaint || "",
       formatDate(response.createdAt),
       formatDate(response.updatedAt)
     ])
